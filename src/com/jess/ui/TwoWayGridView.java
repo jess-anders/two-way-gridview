@@ -275,10 +275,12 @@ public class TwoWayGridView extends TwoWayAbsListView {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		// Sets up mListPadding
-		
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-		
+		if ((mScrollVertically && !(mGridBuilder instanceof VerticalGridBuilder))
+			|| (!mScrollVertically && !(mGridBuilder instanceof HorizontalGridBuilder)) ) {
+			setupGridType();
+		}
+		// Sets up mListPadding
 		mGridBuilder.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 
@@ -2126,9 +2128,16 @@ public class TwoWayGridView extends TwoWayAbsListView {
 			case View.FOCUS_UP:
 				// coming from bottom, need to be in last row
 				return rowEnd == count - 1;
+			case View.FOCUS_FORWARD:
+				// coming from top-left, need to be first in top row
+				return childIndex == rowStart && rowStart == 0;
+			case View.FOCUS_BACKWARD:
+				// coming from bottom-right, need to be last in bottom row
+				return childIndex == rowEnd && rowEnd == count - 1;
 			default:
 				throw new IllegalArgumentException("direction must be one of "
-						+ "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT}.");
+				  + "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT, "
+				  + "FOCUS_FORWARD, FOCUS_BACKWARD}");
 			}
 		}
 
@@ -3440,9 +3449,17 @@ public class TwoWayGridView extends TwoWayAbsListView {
 			case View.FOCUS_UP:
 				// coming from bottom, need to be in last row
 				return columnStart == count - 1;
+			case View.FOCUS_FORWARD:
+				// coming from top-left, need to be first in top row
+				return childIndex == columnStart && columnStart == 0;
+			case View.FOCUS_BACKWARD:
+				// coming from bottom-right, need to be last in bottom row
+				return childIndex == columnEnd && columnEnd == count - 1;
 			default:
 				throw new IllegalArgumentException("direction must be one of "
-						+ "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT}.");
+						+ "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT, "
+						+ "FOCUS_FORWARD, FOCUS_BACKWARD}.");
+
 			}
 		}
 

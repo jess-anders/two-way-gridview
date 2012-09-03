@@ -59,8 +59,6 @@ import android.widget.Adapter;
  */
 public abstract class TwoWayAdapterView<T extends Adapter> extends ViewGroup {
 
-	private static final int SCROLL_BAR_DEFAULT_DELAY = 300;
-	
 	/**
 	 * The item view type returned by {@link Adapter#getItemViewType(int)} when
 	 * the adapter does not want the item's view recycled.

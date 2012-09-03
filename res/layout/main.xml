@@ -16,5 +16,4 @@
     app:stretchMode="spacingWidthUniform"
     app:scrollDirectionPortrait="vertical"
     app:scrollDirectionLandscape="horizontal"
-    app:gravity="center"
-/>
+    app:gravity="center"/>

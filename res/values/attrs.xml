@@ -96,9 +96,6 @@
             <!-- Scroll horizontally. -->
             <enum name="horizontal" value="1" />
         </attr>
-        
-        
-        
     </declare-styleable>
     
     <declare-styleable name="TwoWayGridView">

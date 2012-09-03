@@ -63,7 +63,6 @@ import android.view.ViewTreeObserver;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.Adapter;
 import android.widget.EditText;
-import android.widget.Filterable;
 import android.widget.ListAdapter;
 import android.widget.Scroller;
 
@@ -628,10 +627,13 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		boolean temp = mPortraitOrientation;
 		mPortraitOrientation = (getResources().getConfiguration().orientation !=
 			Configuration.ORIENTATION_LANDSCAPE);
+
 		boolean result = (temp != mPortraitOrientation);
 		if (result) {
-			
+			setupScrollInfo();
+			mRecycler.scrapActiveViews();
 		}
+
 		return result;
 	}
 
@@ -1289,6 +1291,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		orientationChanged();
+
 		if (mSelector == null) {
 			useDefaultSelector();
 		}
@@ -2528,9 +2532,17 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			dX = dest.left + dest.width() / 2;
 			dY = dest.bottom;
 			break;
+		case View.FOCUS_FORWARD:
+		case View.FOCUS_BACKWARD:
+			sX = source.right + source.width() / 2;
+			sY = source.top + source.height() / 2;
+			dX = dest.left + dest.width() / 2;
+			dY = dest.top + dest.height() / 2;
+			break;
 		default:
 			throw new IllegalArgumentException("direction must be one of "
-					+ "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT}.");
+				+ "{FOCUS_UP, FOCUS_DOWN, FOCUS_LEFT, FOCUS_RIGHT, "
+				+ "FOCUS_FORWARD, FOCUS_BACKWARD}.");
 		}
 		int deltaX = dX - sX;
 		int deltaY = dY - sY;
