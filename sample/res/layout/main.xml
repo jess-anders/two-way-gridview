@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.jess.ui.TwoWayGridView
+    xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#E8E8E8"
+    android:id="@+id/gridview"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent"
+    app:cacheColorHint="#E8E8E8"
+    app:columnWidth="80dp"
+    app:rowHeight="80dp"
+    app:numColumns="auto_fit"
+    app:numRows="auto_fit"
+    app:verticalSpacing="16dp"
+    app:horizontalSpacing="16dp"
+    app:stretchMode="spacingWidthUniform"
+    app:scrollDirectionPortrait="vertical"
+    app:scrollDirectionLandscape="horizontal"
+    app:gravity="center"/>
