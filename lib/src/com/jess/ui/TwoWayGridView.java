@@ -1485,7 +1485,7 @@ public class TwoWayGridView extends TwoWayAbsListView {
 						mHorizontalSpacing = requestedHorizontalSpacing +
 						spaceLeftOver / (mNumColumns + 1);
 					} else {
-						mHorizontalSpacing = requestedHorizontalSpacing + spaceLeftOver;
+						mHorizontalSpacing = ((requestedHorizontalSpacing * 2) + spaceLeftOver) / 2;
 					}
 					break;
 				}
@@ -2978,10 +2978,9 @@ public class TwoWayGridView extends TwoWayAbsListView {
 					((mNumRows + 1) * requestedVerticalSpacing);
 					mRowHeight = requestedRowHeight;
 					if (mNumRows > 1) {
-						mVerticalSpacing = requestedVerticalSpacing +
-						spaceLeftOver / (mNumRows + 1);
+						mVerticalSpacing = requestedVerticalSpacing + spaceLeftOver / (mNumRows + 1);
 					} else {
-						mVerticalSpacing = requestedVerticalSpacing + spaceLeftOver;
+						mVerticalSpacing = ((requestedVerticalSpacing * 2) + spaceLeftOver) / 2;
 					}
 					break;
 				}
