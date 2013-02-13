@@ -20,7 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
-import com.jess.ui.R;
+
 import com.jess.ui.TwoWayAbsListView;
 
 public class ImageThumbnailAdapter extends CursorAdapter {
