@@ -452,6 +452,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	private Runnable mClearScrollingCache;
 	private int mMinimumVelocity;
+	private int mMaximumVelocity;
 	private boolean mScrollVerticallyPortrait;
 	private boolean mScrollVerticallyLandscape;
 
@@ -599,6 +600,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 		final ViewConfiguration configuration = ViewConfiguration.get(mContext);
 		mTouchSlop = configuration.getScaledTouchSlop();
 		mMinimumVelocity = configuration.getScaledMinimumFlingVelocity();
+		mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
 		mDensityScale = getContext().getResources().getDisplayMetrics().density;
 		mPortraitOrientation = (getResources().getConfiguration().orientation !=
 			Configuration.ORIENTATION_LANDSCAPE);
@@ -3671,9 +3673,21 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			 */
 			protected final Scroller mScroller;
 
+			protected Runnable mCheckFlywheel;
+			
+			public boolean isScrollingInDirection(float xvel, float yvel) {
+				final int dx = mScroller.getFinalX() - mScroller.getStartX();
+				final int dy = mScroller.getFinalY() - mScroller.getStartY();
+				return !mScroller.isFinished() && Math.signum(xvel) == Math.signum(dx) &&
+						Math.signum(yvel) == Math.signum(dy);
+			}
+
+
 			FlingRunnable() {
 				mScroller = new Scroller(getContext());
 			}
+
+			abstract void flywheelTouch();
 
 			abstract void start(int initialVelocity);
 
@@ -3686,10 +3700,15 @@ ViewTreeObserver.OnTouchModeChangeListener {
 				clearScrollingCache();
 
 				removeCallbacks(this);
-
+				
+				if (mCheckFlywheel != null) {
+					removeCallbacks(mCheckFlywheel);
+				}
 				if (mPositionScroller != null) {
 					removeCallbacks(mPositionScroller);
 				}
+
+				mScroller.abortAnimation();
 			}
 
 			public abstract void run();
@@ -3893,7 +3912,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 							mTouchMode = TOUCH_MODE_SCROLL;
 							mMotionCorrection = 0;
 							motionPosition = findMotionRowY(y);
-							reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
+							mFlingRunnable.flywheelTouch();
 						}
 					}
 				}
@@ -4147,6 +4166,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 						clearScrollingCache();
 					}
 					mLastY = Integer.MIN_VALUE;
+					initOrResetVelocityTracker();
+					mVelocityTracker.addMovement(ev);
 					if (touchMode == TOUCH_MODE_FLING) {
 						return true;
 					}
@@ -4537,6 +4558,35 @@ ViewTreeObserver.OnTouchModeChangeListener {
 				}
 
 			}
+			
+			private static final int FLYWHEEL_TIMEOUT = 40; // milliseconds
+			
+			public void flywheelTouch() {
+				if(mCheckFlywheel == null) {
+					mCheckFlywheel = new Runnable() {
+						public void run() {
+							final VelocityTracker vt = mVelocityTracker;
+							if (vt == null) {
+								return;
+							}
+
+							vt.computeCurrentVelocity(1000, mMaximumVelocity);
+							final float yvel = -vt.getYVelocity();
+
+							if (Math.abs(yvel) >= mMinimumVelocity
+									&& isScrollingInDirection(0, yvel)) {
+								// Keep the fling alive a little longer
+								postDelayed(this, FLYWHEEL_TIMEOUT);
+							} else {
+								endFling();
+								mTouchMode = TOUCH_MODE_SCROLL;
+								reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
+							}
+						}
+					};
+				}
+				postDelayed(mCheckFlywheel, FLYWHEEL_TIMEOUT);
+			}
 		}
 
 
@@ -4746,6 +4796,8 @@ ViewTreeObserver.OnTouchModeChangeListener {
 						clearScrollingCache();
 					}
 					mLastX = Integer.MIN_VALUE;
+					initOrResetVelocityTracker();
+					mVelocityTracker.addMovement(ev);
 					if (touchMode == TOUCH_MODE_FLING) {
 						return true;
 					}
@@ -4833,7 +4885,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 								mTouchMode = TOUCH_MODE_SCROLL;
 								mMotionCorrection = 0;
 								motionPosition = findMotionRowX(x);
-								reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
+								mFlingRunnable.flywheelTouch();
 							}
 						}
 					}
@@ -5302,7 +5354,7 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			 * X value reported by mScroller on the previous fling
 			 */
 			protected int mLastFlingX;
-
+			
 			@Override
 			void start(int initialVelocity) {
 				int initialX = initialVelocity < 0 ? Integer.MAX_VALUE : 0;
@@ -5390,6 +5442,36 @@ ViewTreeObserver.OnTouchModeChangeListener {
 				}
 				}
 
+			}
+			
+			
+			private static final int FLYWHEEL_TIMEOUT = 40; // milliseconds
+	
+			public void flywheelTouch() {
+				if(mCheckFlywheel == null) {
+					mCheckFlywheel = new Runnable() {
+						public void run() {
+							final VelocityTracker vt = mVelocityTracker;
+							if (vt == null) {
+								return;
+							}
+
+							vt.computeCurrentVelocity(1000, mMaximumVelocity);
+							final float xvel = -vt.getXVelocity();
+
+							if (Math.abs(xvel) >= mMinimumVelocity
+									&& isScrollingInDirection(0, xvel)) {
+								// Keep the fling alive a little longer
+								postDelayed(this, FLYWHEEL_TIMEOUT);
+							} else {
+								endFling();
+								mTouchMode = TOUCH_MODE_SCROLL;
+								reportScrollStateChange(OnScrollListener.SCROLL_STATE_TOUCH_SCROLL);
+							}
+						}
+					};
+				}
+				postDelayed(mCheckFlywheel, FLYWHEEL_TIMEOUT);
 			}
 		}
 
@@ -5529,6 +5611,14 @@ ViewTreeObserver.OnTouchModeChangeListener {
 
 	}
 
+
+	private void initOrResetVelocityTracker() {
+		if (mVelocityTracker == null) {
+			mVelocityTracker = VelocityTracker.obtain();
+		} else {
+			mVelocityTracker.clear();
+		}
+	}
 
 }
 
