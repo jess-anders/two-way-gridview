@@ -617,10 +617,12 @@ ViewTreeObserver.OnTouchModeChangeListener {
 			mTouchHandler = new VerticalTouchHandler();
 			setVerticalScrollBarEnabled(true);
 			setHorizontalScrollBarEnabled(false);
+            setIsVertical(true);
 		} else {
 			mTouchHandler = new HorizontalTouchHandler();
 			setVerticalScrollBarEnabled(false);
 			setHorizontalScrollBarEnabled(true);
+            setIsVertical(false);
 		}
 
 	}
